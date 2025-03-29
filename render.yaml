@@ -3,7 +3,7 @@ services:
     name: biomagnetismo-backend
     env: node
     buildCommand: npm install
-    startCommand: node src/index.ts
+    startCommand: node src/index.js
     envVars:
       - key: MONGODB_URI
         value: mongodb+srv://usuario:contraseña@cluster0.mongodb.net/biomagnetismo?retryWrites=true&w=majority
