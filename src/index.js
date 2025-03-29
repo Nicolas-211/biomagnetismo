@@ -43,48 +43,108 @@ app.use(express.json());
 // Endpoints
 app.get('/api/pares', async (req, res) => {
   try {
-    // Busca en todas las colecciones posibles
-    const [pares, pars, biomagnetismo] = await Promise.all([
-      mongoose.connection.db.collection('pares').find({}).toArray(),
-      mongoose.connection.db.collection('pars').find({}).toArray(),
-      mongoose.connection.db.collection('biomagnetismo').find({}).toArray()
-    ]);
-
-    const resultados = [...pares, ...pars, ...biomagnetismo];
+    // 1. Buscar en todas las colecciones relevantes
+    const colecciones = await mongoose.connection.db.listCollections().toArray();
+    const nombresColecciones = colecciones.map(c => c.name);
     
-    if (resultados.length === 0) {
-      return res.status(404).json({ error: 'No se encontraron pares en ninguna colección' });
+    // 2. Buscar en cada colección el documento que contiene los pares
+    let paresEncontrados = [];
+    
+    for (const nombreColeccion of nombresColecciones) {
+      const documentos = await mongoose.connection.db.collection(nombreColeccion).find({}).toArray();
+      
+      // Buscar cualquier documento que tenga un array 'data' con contenido
+      const documentoConData = documentos.find(doc => 
+        doc.data && 
+        Array.isArray(doc.data) && 
+        doc.data.length > 0
+      );
+      
+      if (documentoConData) {
+        paresEncontrados = documentoConData.data;
+        break; // Salir del bucle al encontrar los pares
+      }
     }
 
-    res.json(resultados);
+    if (paresEncontrados.length === 0) {
+      return res.status(404).json({ 
+        error: 'No se encontraron pares biomagnéticos',
+        sugerencia: 'Verifica la estructura de la base de datos'
+      });
+    }
+
+    // 3. Devolver solo los pares (opcional: filtrar campos)
+    res.json(paresEncontrados.map(par => ({
+      id: par.id,
+      nombre: par.nombre,
+      tipo: par.tipo,
+      // ...otros campos que necesites
+    })));
+
   } catch (err) {
     console.error('❌ Error:', err);
-    res.status(500).json({ error: 'Error en la búsqueda' });
-  }
-});
-app.get('/api/collections', async (req, res) => {
-  try {
-    const collections = await mongoose.connection.db.listCollections().toArray();
-    console.log("📌 Colecciones encontradas:", collections); // Debug
-    res.json(collections);
-  } catch (err) {
-    console.error('❌ Error al listar colecciones:', err);
-    res.status(500).json({ error: 'Error en la consulta' });
+    res.status(500).json({ 
+      error: 'Error en el servidor',
+      detalle: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
   }
 });
 
 app.get('/api/pares/:id', async (req, res) => {
   try {
-    const par = await Par.findOne({ id: req.params.id }); 
-    if (!par) return res.status(404).json({ error: 'Par no encontrado' });
-    res.json(par);
+    // 1. Buscar en todas las colecciones como lo hace /api/pares
+    const colecciones = await mongoose.connection.db.listCollections().toArray();
+    
+    for (const { name: nombreColeccion } of colecciones) {
+      const documentos = await mongoose.connection.db.collection(nombreColeccion).find({}).toArray();
+      
+      const documentoConData = documentos.find(doc => 
+        doc.data && Array.isArray(doc.data) && doc.data.length > 0
+      );
+      
+      if (documentoConData) {
+        // Buscar el par específico en el array data
+        const parEncontrado = documentoConData.data.find(par => par.id === req.params.id);
+        
+        if (parEncontrado) {
+          return res.json(parEncontrado);
+        }
+      }
+    }
+
+    // Si no se encuentra
+    const sampleIds = await getSampleIds();
+    return res.status(404).json({ 
+      error: 'Par no encontrado',
+      idsDisponibles: sampleIds
+    });
+
   } catch (err) {
-    console.error('❌ Error al cargar el par:', err);
-    res.status(500).json({ error: 'Error al cargar el par' });
+    console.error('❌ Error:', err);
+    res.status(500).json({ 
+      error: 'Error en el servidor',
+      detalle: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
   }
 });
 
+// Función auxiliar para mostrar algunos IDs disponibles
+async function getSampleIds() {
+  const samplePares = await mongoose.connection.db.collection('pares')
+    .find({}, { projection: { id: 1, _id: 0 } })
+    .limit(5)
+    .toArray();
+  
+  const samplePars = await mongoose.connection.db.collection('pars')
+    .find({}, { projection: { id: 1, _id: 0 } })
+    .limit(5)
+    .toArray();
 
+  return {
+    enColeccionPares: samplePares.map(p => p.id),
+    enColeccionPars: samplePars.map(p => p.id)
+  };
+}
 app.listen(PORT, () => {
   console.log(`🚀 Backend listo en http://localhost:${PORT}`);
 });
