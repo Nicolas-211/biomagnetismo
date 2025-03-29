@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: biomagnetismo-backend
+    env: node
+    buildCommand: npm install
+    startCommand: node src/index.js
+    envVars:
+      - key: MONGODB_URI
+        value: mongodb+srv://usuario:contraseña@cluster0.mongodb.net/biomagnetismo?retryWrites=true&w=majority
+      - key: PORT
+        value: 10000
+      - key: FRONTEND_URL
+        value: https://tu-frontend.vercel.app
