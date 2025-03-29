@@ -32,7 +32,7 @@ const Par = mongoose.model('Par', ParSchema);
 
 // Middlewares
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'mongodb+srv://nicolasnanjari:RzAaonXFR3Bfzi9r@cluster0.fx44go1.mongodb.net/biomagnetismo?retryWrites=true&w=majority'
+  origin: process.env.FRONTEND_URL || 'mongodb+srv://nicolasnanjari:RzAaonXFR3Bfzi9r@cluster0.fx44go1.mongodb.net/biomagnetismo'
 }));
 app.use(express.json());
 
