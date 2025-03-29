@@ -31,8 +31,12 @@ const ParSchema = new mongoose.Schema({
 const Par = mongoose.model('pares', ParSchema);
 
 // Middlewares
+// En tu backend (app.js)
 app.use(cors({
-  origin: process.env.FRONTEND_URL
+  origin: [
+    'http://localhost:5173', // Para desarrollo
+    'https://tu-frontend-en-render.onrender.com' // Cuando despliegues el front
+  ]
 }));
 app.use(express.json());
 
