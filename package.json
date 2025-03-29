@@ -1,8 +1,10 @@
 {
   "name": "biomagnetismo-backend",
   "version": "1.0.0",
+  "type": "module",
   "main": "src/index.js",
   "scripts": {
+    "build": "tsc",
     "start": "node src/index.js",
     "dev": "nodemon src/index.js"
   },

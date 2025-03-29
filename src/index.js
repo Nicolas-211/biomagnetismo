@@ -1,7 +1,8 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+
 
 dotenv.config();
 
@@ -9,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 10000; // Render usa 10000
 
 // Conexión a MongoDB Atlas
-const mongoUri = process.env.MONGODB_URI || 'mongodb+srv://nicolasnanjari:RzAaonXFR3Bfzi9r@cluster0.fx44go1.mongodb.net/biomagnetismo?retryWrites=true&w=majority"';
+const mongoUri = process.env.MONGODB_URI || 'mongodb+srv://nicolasnanjari:RzAaonXFR3Bfzi9r@cluster0.fx44go1.mongodb.net/biomagnetismo?retryWrites=true&w=majority';
 mongoose.connect(mongoUri)
   .then(() => console.log('✅ Conectado a MongoDB Atlas'))
   .catch(err => console.error('❌ Error de conexión:', err));
