@@ -78,6 +78,7 @@ app.get('/api/pares', async (req, res) => {
       id: par.id,
       nombre: par.nombre,
       tipo: par.tipo,
+      PATOGENO:par.PATOGENO
       // ...otros campos que necesites
     })));
 
