@@ -35,7 +35,7 @@ const Par = mongoose.model('pares', ParSchema);
 app.use(cors({
   origin: [
     'http://localhost:5173', // Para desarrollo
-    'https://tu-frontend-en-render.onrender.com' // Cuando despliegues el front
+    'https://biomagnetismo-front.vercel.app' // Cuando despliegues el front
   ]
 }));
 app.use(express.json());
